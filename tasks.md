@@ -83,12 +83,12 @@ python -m lmms_eval --model llava --model_args pretrained="llava-hf/llava-1.5-7b
 1. [✅] Install lmms-eval
 2. [✅] Create dataset conversion script
 3. [✅] Create task YAML and utils.py
-4. [ ] Test with LLaVA-1.5-7B
+4. [ ] Test with TinyLLaVA-Phi-2-SigLIP-3.1B
 5. [ ] Run evaluation and analyze results
 
 ## Models to Test (starting lightweight)
 
-- LLaVA-1.5-7B (start here)
+- TinyLLaVA-Phi-2-SigLIP-3.1B (start here)
 - InstructBLIP-7B
 - Qwen-VL-7B
 - MiniCPM-V

@@ -15,7 +15,7 @@ if [ ! -d "../TinyLLaVA_Factory" ]; then
     git clone https://github.com/TinyLLaVA/TinyLLaVA_Factory
     cd TinyLLaVA_Factory
 
-    pip install -e .
+    pip install --no-deps -U .
 
     pip install torch==2.0.1 torchvision==0.15.2 --index-url https://download.pytorch.org/whl/cu118
 
