@@ -6,7 +6,7 @@ doc_to_visual: !function utils.rock_doc_to_visual
 doc_to_text: !function utils.rock_doc_to_text
 doc_to_target: "label"
 generation_kwargs:
-  max_new_tokens: 32
+  max_new_tokens: 6
   temperature: 0
   do_sample: false
 metric_list:
