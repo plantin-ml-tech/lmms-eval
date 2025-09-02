@@ -45,16 +45,22 @@ class OpenAICompatible(lmms):
         self.model_version = model_version
         self.timeout = timeout
         self.max_retries = max_retries
-        self.max_size_in_mb = max_size_in_mb  # some models have a limit on the size of the image
+        self.max_size_in_mb = (
+            max_size_in_mb  # some models have a limit on the size of the image
+        )
         self.continual_mode = continual_mode
         self.max_frames_num = max_frames_num
         if self.continual_mode:
             if response_persistent_folder is None:
-                raise ValueError("Continual mode requires a persistent path for the response. Please provide a valid path.")
+                raise ValueError(
+                    "Continual mode requires a persistent path for the response. Please provide a valid path."
+                )
 
             os.makedirs(response_persistent_folder, exist_ok=True)
             self.response_persistent_folder = response_persistent_folder
-            self.response_persistent_file = os.path.join(self.response_persistent_folder, f"{self.model_version}_response.json")
+            self.response_persistent_file = os.path.join(
+                self.response_persistent_folder, f"{self.model_version}_response.json"
+            )
 
             if os.path.exists(self.response_persistent_file):
                 with open(self.response_persistent_file, "r") as f:
@@ -65,18 +71,31 @@ class OpenAICompatible(lmms):
                 self.cache_mode = "start"
 
         self.client = (
-            OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url=os.getenv("OPENAI_API_BASE"))
+            OpenAI(
+                api_key=os.getenv("OPENAI_API_KEY"),
+                base_url=os.getenv("OPENAI_API_BASE"),
+            )
             if not azure_openai
-            else AzureOpenAI(api_key=os.getenv("AZURE_OPENAI_API_KEY"), azure_endpoint=os.getenv("AZURE_OPENAI_API_BASE"), api_version=os.getenv("AZURE_OPENAI_API_VERSION"))
+            else AzureOpenAI(
+                api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+                azure_endpoint=os.getenv("AZURE_OPENAI_API_BASE"),
+                api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+            )
         )
 
         accelerator = Accelerator()
         # assert self.batch_size_per_gpu == 1, "Llava currently does not support batched generation. See https://github.com/haotian-liu/LLaVA/issues/754. HF Llava also has this issue."
         if accelerator.num_processes > 1:
-            assert accelerator.distributed_type in [DistributedType.FSDP, DistributedType.MULTI_GPU, DistributedType.DEEPSPEED], "Unsupported distributed type provided. Only DDP and FSDP are supported."
+            assert accelerator.distributed_type in [
+                DistributedType.FSDP,
+                DistributedType.MULTI_GPU,
+                DistributedType.DEEPSPEED,
+            ], "Unsupported distributed type provided. Only DDP and FSDP are supported."
             self.accelerator = accelerator
             if self.accelerator.is_local_main_process:
-                eval_logger.info(f"Using {accelerator.num_processes} devices with data parallelism")
+                eval_logger.info(
+                    f"Using {accelerator.num_processes} devices with data parallelism"
+                )
             self._rank = self.accelerator.local_process_index
             self._world_size = self.accelerator.num_processes
         else:
@@ -114,11 +133,15 @@ class OpenAICompatible(lmms):
     def encode_video(self, video_path, for_get_frames_num):
         vr = VideoReader(video_path, ctx=cpu(0))
         total_frame_num = len(vr)
-        uniform_sampled_frames = np.linspace(0, total_frame_num - 1, for_get_frames_num, dtype=int)
+        uniform_sampled_frames = np.linspace(
+            0, total_frame_num - 1, for_get_frames_num, dtype=int
+        )
 
         # Ensure the last frame is included
         if total_frame_num - 1 not in uniform_sampled_frames:
-            uniform_sampled_frames = np.append(uniform_sampled_frames, total_frame_num - 1)
+            uniform_sampled_frames = np.append(
+                uniform_sampled_frames, total_frame_num - 1
+            )
 
         frame_idx = uniform_sampled_frames.tolist()
         frames = vr.get_batch(frame_idx).asnumpy()
@@ -137,15 +160,24 @@ class OpenAICompatible(lmms):
     def flatten(self, input):
         new_list = []
         for i in input:
-            for j in i:
-                new_list.append(j)
+            # Check if i is iterable (list/tuple) but not a string or PIL Image
+            if hasattr(i, "__iter__") and not isinstance(i, (str, Image.Image)):
+                for j in i:
+                    new_list.append(j)
+            else:
+                # If i is not iterable or is a single image/string, add it directly
+                new_list.append(i)
         return new_list
 
     def generate_until(self, requests) -> List[str]:
         res = []
-        pbar = tqdm(total=len(requests), disable=(self.rank != 0), desc="Model Responding")
+        pbar = tqdm(
+            total=len(requests), disable=(self.rank != 0), desc="Model Responding"
+        )
 
-        for contexts, gen_kwargs, doc_to_visual, doc_id, task, split in [reg.args for reg in requests]:
+        for contexts, gen_kwargs, doc_to_visual, doc_id, task, split in [
+            reg.args for reg in requests
+        ]:
             if self.continual_mode is True and self.cache_mode == "resume":
                 doc_uuid = f"{task}___{split}___{doc_id}"
                 if doc_uuid in self.response_cache:
@@ -163,10 +195,24 @@ class OpenAICompatible(lmms):
                 visuals = self.flatten(visuals)
                 imgs = []  # multiple images or frames for video
                 for visual in visuals:
-                    if isinstance(visual, str) and (".mp4" in visual or ".avi" in visual or ".mov" in visual or ".flv" in visual or ".wmv" in visual):
+                    if isinstance(visual, str) and (
+                        ".mp4" in visual
+                        or ".avi" in visual
+                        or ".mov" in visual
+                        or ".flv" in visual
+                        or ".wmv" in visual
+                    ):
                         frames = self.encode_video(visual, self.max_frames_num)
                         imgs.extend(frames)
-                    elif isinstance(visual, str) and (".jpg" in visual or ".jpeg" in visual or ".png" in visual or ".gif" in visual or ".bmp" in visual or ".tiff" in visual or ".webp" in visual):
+                    elif isinstance(visual, str) and (
+                        ".jpg" in visual
+                        or ".jpeg" in visual
+                        or ".png" in visual
+                        or ".gif" in visual
+                        or ".bmp" in visual
+                        or ".tiff" in visual
+                        or ".webp" in visual
+                    ):
                         img = self.encode_image(visual)
                         imgs.append(img)
                     elif isinstance(visual, Image.Image):
@@ -180,7 +226,12 @@ class OpenAICompatible(lmms):
             payload["messages"].append({"role": "user", "content": []})
             payload["messages"][0]["content"].append({"type": "text", "text": contexts})
             for img in imgs:
-                payload["messages"][0]["content"].append({"type": "image_url", "image_url": {"url": f"data:image/png;base64,{img}"}})
+                payload["messages"][0]["content"].append(
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:image/png;base64,{img}"},
+                    }
+                )
 
             if "max_new_tokens" not in gen_kwargs:
                 gen_kwargs["max_new_tokens"] = 1024
@@ -213,11 +264,15 @@ class OpenAICompatible(lmms):
 
                 except Exception as e:
                     error_msg = str(e)
-                    eval_logger.info(f"Attempt {attempt + 1}/{self.max_retries} failed with error: {error_msg}")
+                    eval_logger.info(
+                        f"Attempt {attempt + 1}/{self.max_retries} failed with error: {error_msg}"
+                    )
 
                     # On last attempt, log error and set empty response
                     if attempt == self.max_retries - 1:
-                        eval_logger.error(f"All {self.max_retries} attempts failed. Last error: {error_msg}")
+                        eval_logger.error(
+                            f"All {self.max_retries} attempts failed. Last error: {error_msg}"
+                        )
                         response_text = ""
                     else:
                         time.sleep(self.timeout)
@@ -235,7 +290,11 @@ class OpenAICompatible(lmms):
         return res
 
     def generate_until_multi_round(self, requests) -> List[str]:
-        raise NotImplementedError("TODO: Implement multi-round generation for OpenAI compatible models")
+        raise NotImplementedError(
+            "TODO: Implement multi-round generation for OpenAI compatible models"
+        )
 
     def loglikelihood(self, requests: List[Instance]) -> List[Tuple[float, bool]]:
-        raise NotImplementedError("TODO: Implement loglikelihood for OpenAI compatible models")
+        raise NotImplementedError(
+            "TODO: Implement loglikelihood for OpenAI compatible models"
+        )
