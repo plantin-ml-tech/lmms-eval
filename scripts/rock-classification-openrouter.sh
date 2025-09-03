@@ -30,7 +30,6 @@ uv run lmms_eval \
     --model openai_compatible \
     --model_args model_version="$MODEL" \
     --tasks rock_classification \
-    --batch_size 16 \
     --log_samples \
     --limit 16 \
     --log_samples_suffix "rock-classification-openrouter-$(echo $MODEL | tr '/' '-')" \
