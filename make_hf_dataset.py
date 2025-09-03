@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--data_path",
         default=os.getenv(
-            "DATA_PATH", "/home/euler/Projects/Forks/rock-identifier/data/test-dataset"
+            "DATA_PATH", "/home/euler/Projects/Forks/rock-identifier/data/rock-dataset-test"
         ),
     )
     parser.add_argument(
