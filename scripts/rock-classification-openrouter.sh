@@ -21,9 +21,12 @@ export OPENAI_API_BASE="https://openrouter.ai/api/v1"
 
 # Set default model if not specified
 MODEL=${OPENROUTER_MODEL:-"gpt-4o"}
+# Create model-specific folder name (replace slashes and special chars)
+MODEL_FOLDER=$(echo "$MODEL" | tr '/' '-' | tr ':' '-')
 
 echo "Using OpenRouter with model: $MODEL"
 echo "API Base: $OPENAI_API_BASE"
+echo "Output folder: ./logs/rock_classification_openrouter/$MODEL_FOLDER/"
 echo "Running rock classification evaluation..."
 
 uv run lmms_eval \
@@ -31,10 +34,9 @@ uv run lmms_eval \
     --model_args model_version="$MODEL" \
     --tasks rock_classification \
     --log_samples \
-    --limit 16 \
     --log_samples_suffix "rock-classification-openrouter-$(echo $MODEL | tr '/' '-')" \
-    --output_path "./logs/rock_classification_openrouter/" \
+    --output_path "./logs/rock_classification_openrouter/$MODEL_FOLDER/" \
     --num_fewshot 0
 
-echo "Evaluation completed! Check results in ./logs/rock_classification_openrouter/"
+echo "Evaluation completed! Check results in ./logs/rock_classification_openrouter/$MODEL_FOLDER/"
 echo "Model used: $MODEL"
