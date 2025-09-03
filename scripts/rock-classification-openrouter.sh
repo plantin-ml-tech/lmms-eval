@@ -30,11 +30,12 @@ uv run lmms_eval \
     --model openai_compatible \
     --model_args model_version="$MODEL" \
     --tasks rock_classification \
-    --batch_size 1 \
+    --batch_size 16 \
     --log_samples \
-    --limit 32 \
+    --limit 16 \
     --log_samples_suffix "rock-classification-openrouter-$(echo $MODEL | tr '/' '-')" \
-    --output_path "./logs/rock_classification_openrouter/"
+    --output_path "./logs/rock_classification_openrouter/" \
+    --num_fewshot 0
 
 echo "Evaluation completed! Check results in ./logs/rock_classification_openrouter/"
 echo "Model used: $MODEL"

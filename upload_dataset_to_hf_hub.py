@@ -16,10 +16,10 @@ def upload_dataset_to_hub(local_dataset_path, repo_name, token=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--dataset_path", default=os.getenv("OUTPUT_NAME", "datasets/rock_dataset")
+        "--dataset_path", default=os.getenv("OUTPUT_NAME", "datasets/rock-dataset-test")
     )
     parser.add_argument(
-        "--repo_name", default=os.getenv("HF_REPO_NAME", "DenysKovalML/rock_dataset")
+        "--repo_name", default=os.getenv("HF_REPO_NAME", "DenysKovalML/rock-dataset-test")
     )
     parser.add_argument("--token", default=os.getenv("HF_TOKEN"))
     args = parser.parse_args()

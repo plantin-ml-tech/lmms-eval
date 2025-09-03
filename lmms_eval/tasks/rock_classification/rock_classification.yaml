@@ -1,4 +1,4 @@
-dataset_path: DenysKovalML/rock_dataset
+dataset_path: DenysKovalML/rock-dataset-test
 task: "rock_classification"
 test_split: train
 output_type: generate_until

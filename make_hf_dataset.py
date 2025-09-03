@@ -41,10 +41,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--data_path",
-        default=os.getenv("DATA_PATH", "/data/ml-rocks-datasets/dataset_splited/test"),
+        default=os.getenv(
+            "DATA_PATH", "/home/euler/Projects/Forks/rock-identifier/data/test-dataset"
+        ),
     )
     parser.add_argument(
-        "--output_name", default=os.getenv("OUTPUT_NAME", "rock_dataset")
+        "--output_name", default=os.getenv("OUTPUT_NAME", "rock-dataset-test")
     )
     args = parser.parse_args()
 

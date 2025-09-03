@@ -1,6 +1,7 @@
 def rock_doc_to_visual(doc):
     return doc["image"]
 
+
 class_names = [
     "rhodonite",
     "fuchsite",
@@ -370,8 +371,35 @@ class_names = [
     "chrysocolla",
 ]
 
+
 def rock_doc_to_text(doc):
-    return "What type of rock or mineral is shown in this image? Answer with SINGLE word - the exact name. Choose the name from the following options: " + ", ".join(class_names)
+    base_prompt = (
+        """You are an expert geologist specializing in rock and mineral identification. Analyze the image carefully and identify the specific rock or mineral shown.
+
+        TASK: Identify the exact rock or mineral type in this image.
+
+        INSTRUCTIONS:
+        1. Examine the visual characteristics: color, texture, crystal structure, luster, and geological formation patterns
+        2. Consider distinctive features like banding, crystalline structure, opacity, and surface appearance
+        3. Match your observations to the provided classification options
+        4. Respond with ONLY the exact classification name in lowercase
+        5. Do not provide explanations, descriptions, or alternative options
+
+        CLASSIFICATION OPTIONS:
+        """
+        + ", ".join(class_names)
+        + """
+
+        IMPORTANT CONSTRAINTS:
+        - Answer with exactly ONE word in lowercase
+        - Must be from the provided options list
+        - No additional text or explanations
+        - Focus on the most distinctive geological features visible
+
+        Your answer:"""
+    )
+
+    return base_prompt
 
 
 def rock_doc_to_target(doc):
